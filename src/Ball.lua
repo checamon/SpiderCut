@@ -60,7 +60,7 @@ function Ball:update(dt,level)
 end
 
 function Ball:render()
-    love.graphics.setColor(255,255,255,255)
+    love.graphics.setColor(255/255,255/255,255/255,255/255)
     love.graphics.circle('fill', self.x, self.y, self.width/2)
 end
 

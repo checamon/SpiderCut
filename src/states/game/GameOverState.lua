@@ -26,9 +26,9 @@ function GameOverState:update(dt)
 end
 
 function GameOverState:render()
-    love.graphics.clear(0, 0, 0, 255)
+    love.graphics.clear(0, 0, 0, 255/255)
 
-    love.graphics.setColor(56, 56, 56, 255)
+    love.graphics.setColor(56/255, 56/255, 56/255, 255/255)
     love.graphics.setFont(gFonts['large'])
     love.graphics.printf('GAME OVER', 0, VIRTUAL_HEIGHT / 2 - 72, VIRTUAL_WIDTH, 'center')
     love.graphics.setFont(gFonts['medium'])
@@ -39,6 +39,6 @@ function GameOverState:render()
     love.graphics.printf('Press Enter', 0, VIRTUAL_HEIGHT / 2 + 88, VIRTUAL_WIDTH, 'center')
     love.graphics.setFont(gFonts['small'])
 
-    love.graphics.setColor(255, 255, 255, 255)
+    love.graphics.setColor(255/255, 255/255, 255/255, 255/255)
     -- love.graphics.draw(gTextures[self.sprite], self.spriteX, self.spriteY)
 end

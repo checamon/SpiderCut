@@ -17,7 +17,7 @@ function FadeInState:init(color, time, onFadeComplete)
     self.time = time
 
     Timer.tween(self.time, {
-        [self] = {opacity = 255}
+        [self] = {opacity = 255/255}
     })
     :finish(function()
         gStateStack:pop()
@@ -29,5 +29,5 @@ function FadeInState:render()
     love.graphics.setColor(self.r, self.g, self.b, self.opacity)
     love.graphics.rectangle('fill', 0, 0, VIRTUAL_WIDTH, VIRTUAL_HEIGHT)
 
-    love.graphics.setColor(255, 255, 255, 255)
+    love.graphics.setColor(1/255, 1/255, 1/255, 1/255)
 end

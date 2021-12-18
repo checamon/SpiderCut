@@ -27,8 +27,8 @@ function PlayState:update(dt)
 end
 
 function PlayState:render()
-    love.graphics.clear(0, 0, 0, 255)    
-    love.graphics.setColor(40, 45, 52,255)
+    love.graphics.clear(0, 0, 0, 255/255)    
+    love.graphics.setColor(40/255, 45/255, 52/255,255/255)
 
     love.graphics.setFont(gFonts['small'])
     love.graphics.printf('Score '..tostring(self.player.score), 
@@ -95,7 +95,7 @@ end
 
 function PlayState:nextStage()
     gStateStack:push(FadeOutState({
-        r = 255, g = 255, b = 255}, 1,function()
+        r = 255/255, g = 255/255, b = 255/255}, 1,function()
         self.stage = self.stage + 1
         self.level = Level()
         self.player:reset()
@@ -108,7 +108,7 @@ function PlayState:nextStage()
         self.level.balls = self.balls
         gSounds['music']:stop()
         gSounds['heal']:play()        
-        gStateStack:push(FadeOutState({r = 255, g = 255, b = 255}, 1,function()
+        gStateStack:push(FadeOutState({r = 1/255, g = 1/255, b = 1/255}, 1,function()
             gSounds['music']:play()
         end))
     end))

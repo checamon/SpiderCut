@@ -11,7 +11,7 @@ end
 function StartState:update(dt)
     if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') then
         gStateStack:push(FadeInState({
-            r = 255, g = 255, b = 255
+            r = 255/255, g = 255/255, b = 255/255
         }, 1,
         function()
             gSounds['intro-music']:stop()
@@ -27,8 +27,8 @@ end
 
 function StartState:render()
     -- print("StartSate : setting colors")
-    love.graphics.clear(0, 0, 0, 255)
-    love.graphics.setColor(56, 56, 56, 255)
+    love.graphics.clear(0, 0, 0, 255/255)
+    love.graphics.setColor(56/255, 56/255, 56/255, 255/255)
     love.graphics.setFont(gFonts['large'])
     love.graphics.printf('Spider Cut!', 0, VIRTUAL_HEIGHT / 2 - 72, VIRTUAL_WIDTH, 'center')
     love.graphics.setFont(gFonts['medium'])
