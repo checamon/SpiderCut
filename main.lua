@@ -32,7 +32,7 @@
 require 'src/Dependencies'
 
 function love.load()
-    love.window.setTitle('BallCatch50')
+    love.window.setTitle('SpiderCut')
     love.graphics.setDefaultFilter('nearest', 'nearest')
     math.randomseed(os.time())
 
