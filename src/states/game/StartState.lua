@@ -11,7 +11,7 @@ end
 function StartState:update(dt)
     if love.keyboard.wasPressed('enter') or love.keyboard.wasPressed('return') then
         gStateStack:push(FadeInState({
-            r = 255/255, g = 255/255, b = 255/255
+            r = 1/255, g = 1/255, b = 1/255
         }, 1,
         function()
             gSounds['intro-music']:stop()
