@@ -15,6 +15,7 @@ function Level:update(dt)
 end
 
 function Level:render()
+    self:renderBackground()
     self:renderOuterSegments()
 end
 
@@ -22,6 +23,10 @@ function Level:renderOuterSegments()
     for k,segment in pairs(self.segments) do
         segment:render()
     end
+end
+
+function Level:renderBackground()
+    love.graphics.draw(gImages["img1"],LEVEL_RENDER_OFFSET,LEVEL_RENDER_OFFSET_TOP)
 end
 
 function Level:createLevel()
