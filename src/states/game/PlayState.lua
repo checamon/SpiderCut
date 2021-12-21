@@ -48,8 +48,8 @@ function PlayState:createBalls()
 
     for i = 1, self.stage do
         table.insert(self.balls,Ball(
-            math.random(LEVEL_RENDER_OFFSET, VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET), --X
-            math.random(LEVEL_RENDER_OFFSET_TOP, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET), --Y
+            math.random(LEVEL_RENDER_OFFSET + 5, VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET - 5), --X
+            math.random(LEVEL_RENDER_OFFSET_TOP + 5, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET - 5), --Y
             math.random(20,90),math.random(20,90) -- speed
         ))
     end
