@@ -1,5 +1,5 @@
 {
-    "version": "0.2.0",
+    "version": "0.3.2",
     "configurations": [
       {
         "name": "Debug Love",
@@ -9,7 +9,7 @@
           "command": "love"
         },
         "args": [
-          "."
+          "game"
         ],
         "scriptRoots": [
           "game"
