@@ -62,3 +62,9 @@ gSounds = {
     ['victory-music'] = love.audio.newSource('sounds/victory.wav', 'static'),
     ['intro-music'] = love.audio.newSource('sounds/intro.mp3', 'static')
 }
+
+gImages = {
+    ['img1'] = love.graphics.newImage('graphics/images/wp_18.jpg'),
+    ['img2'] = love.graphics.newImage('graphics/images/wp_30.jpg'),
+    ['img3'] = love.graphics.newImage('graphics/images/wp_46.jpg'),
+}
