@@ -21,7 +21,7 @@ function PlayState:enter()
 end
 
 function PlayState:update(dt)
-    -- self.level:update(dt)
+    self.level:update(dt)
     self.player:update(dt)
     self:updateBalls(dt, self.level)
 end
