@@ -5,7 +5,7 @@ PlayState = Class{__includes = BaseState}
 function PlayState:init()
     self.name = 'PlayState'
     self.stage = 1
-    self.level = Level()
+    self.level = Level(self.stage)
     self.player = Player ( ENTITY_DEFS['player'] , self.level)
     self.level.player = self.player
     self.balls = {}
@@ -97,7 +97,7 @@ function PlayState:nextStage()
     gStateStack:push(FadeOutState({
         r = 255/255, g = 255/255, b = 255/255}, 1,function()
         self.stage = self.stage + 1
-        self.level = Level()
+        self.level = Level(self.stage)
         self.player:reset()
         self.player.score = self.player.score + self.player.multiplier * #self.balls
         self.player.multiplier = self.player.multiplier + #self.balls

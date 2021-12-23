@@ -64,7 +64,11 @@ gSounds = {
 }
 
 gImages = {
-    ['img1'] = love.graphics.newImage('graphics/images/wp_18.jpg'),
-    ['img2'] = love.graphics.newImage('graphics/images/wp_30.jpg'),
-    ['img3'] = love.graphics.newImage('graphics/images/wp_46.jpg'),
+    -- convert wp_30.jpg -resize 364x176! wp_30.jpg 
+    love.graphics.newImage('graphics/images/wp_18.jpg'),
+    love.graphics.newImage('graphics/images/wp_30.jpg'),
+    love.graphics.newImage('graphics/images/wp_46.jpg'),
+    love.graphics.newImage('graphics/images/wp_3.jpg'),
+    love.graphics.newImage('graphics/images/hentai2.jpg'),
+    love.graphics.newImage('graphics/images/1534_4255446.jpg'),
 }

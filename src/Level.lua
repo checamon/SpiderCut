@@ -1,23 +1,24 @@
 -- require('mobdebug').start()
 Level = Class {}
 
-function Level:init()
-
+function Level:init(stage)
+    self.stage = stage
+    self.points = {}
+    self.player = {}
     self.segments = self:createLevel()
     self.polygon = self:createPolygon()
-    self.player = {}
-    self.mesh = {}
+    self.mesh = poly2mesh(self.points)
 
 end
 
 function Level:update(dt)
-    self:createPolygon()
-    if #self.polygonPoints < 3 then
-        self.mesh = {}
-    else
-        print_r(self.polygonPoints)
-        self.mesh = poly2mesh(self.polygonPoints)
-    end
+    -- print_r(self.points)
+    -- print(tostring(#self.points))
+    -- if self.mesh == nil and #self.points > 2 then
+    --     self.mesh = poly2mesh(self.points)
+    -- end
+    self.mesh = poly2mesh(self.points)
+    -- print_r(self.mesh:getVertices())
 end
 
 function Level:render()
@@ -30,8 +31,11 @@ function Level:renderOuterSegments()
 end
 
 function Level:renderBackground()
-    love.graphics.draw(gImages["img1"], LEVEL_RENDER_OFFSET,LEVEL_RENDER_OFFSET_TOP)
-    love.graphics.draw(self.mesh, 0, 0)
+    love.graphics.draw(gImages[(self.stage % #gImages)], LEVEL_RENDER_OFFSET,
+                       LEVEL_RENDER_OFFSET_TOP)
+    if self.mesh:type() == "Mesh" then 
+        love.graphics.draw(self.mesh, 0, 0) 
+    end
 end
 
 function Level:createLevel()
@@ -149,6 +153,7 @@ end
 function Level:createPolygon()
     local polygon = {}
     local polygonPoints = {}
+    local pointlist = {}
     local j = 1
     for i, segment in ipairs(self.segments) do
         polygon[i] = {}
@@ -159,10 +164,15 @@ function Level:createPolygon()
         polygonPoints[j + 1] = polygon[i].y
         polygonPoints[j + 2] = polygon[i + 1].x
         polygonPoints[j + 3] = polygon[i + 1].y
+
+        table.insert(pointlist, polygon[i].x)
+        table.insert(pointlist, polygon[i].y)
+
         j = j + 4
         i = i + 1
     end
     self.polygonPoints = polygonPoints
+    self.points = pointlist
     return polygon
 end
 
@@ -524,6 +534,8 @@ function Level:cutLevel()
         end
     end
 
+    self:createPolygon()
+    self.mesh = poly2mesh(self.points)
 end
 
 function Level:orderSegments(segs)
