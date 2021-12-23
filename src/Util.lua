@@ -114,7 +114,6 @@ function poly2mesh(points)
             mesh:setVertex(i, x, y, x / 50, y / 50, .5, .5, .9, 1)
         end
         mesh:setVertexMap(vnums)
-        print_r(mesh:type())
         return mesh
     else
         return nil
