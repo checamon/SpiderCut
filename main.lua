@@ -37,7 +37,7 @@ if os.getenv("LOCAL_LUA_DEBUGGER_VSCODE") == "1" then
 function love.load()
     love.window.setTitle('SpiderCut')
     love.graphics.setDefaultFilter('nearest', 'nearest')
-    love.graphics.setLineJoin( "miter" )
+    love.graphics.setLineJoin( "bevel" )
     math.randomseed(os.time())
 
     push:setupScreen(VIRTUAL_WIDTH, VIRTUAL_HEIGHT, WINDOW_WIDTH, WINDOW_HEIGHT, {

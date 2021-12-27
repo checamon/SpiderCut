@@ -8,17 +8,10 @@ function Level:init(stage)
     self.segments = self:createLevel()
     self.polygon = self:createPolygon()
     self.mesh = poly2mesh(self.points)
-
 end
 
 function Level:update(dt)
-    -- print_r(self.points)
-    -- print(tostring(#self.points))
-    -- if self.mesh == nil and #self.points > 2 then
-    --     self.mesh = poly2mesh(self.points)
-    -- end
     self.mesh = poly2mesh(self.points)
-    -- print_r(self.mesh:getVertices())
 end
 
 function Level:render()
