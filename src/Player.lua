@@ -39,13 +39,9 @@ function Player:init(def, level )
 end
 
 function Player:isMoveAllowed(point)
-    print("Player:isMoveAllowed " .. tostring(point[1]) .. "," .. tostring(point[2]))    
     point = {point[1] + self.width/2, point[2] + self.width/2}
-    print("Player:isMoveAllowed " .. tostring(point[1]) .. "," .. tostring(point[2]))    
     for i,segment in pairs (self.trailSegments) do
         if segment:pointInSegment(point) then
-            print("Player:isMoveAllowed = false")
-            print_r(segment)
             return false
         end
     end
