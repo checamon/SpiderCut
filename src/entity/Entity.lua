@@ -25,9 +25,9 @@ function Entity:changeState(name)
     -- printChangeState to "..name)
 end
 
--- function Entity:isMoveAllowed(point)
---     return point.x, point.y
--- end
+function Entity:isMoveAllowed(point)
+    return true
+end
 
 function Entity:changeAnimation(name)
     self.currentAnimation = self.animations[name]

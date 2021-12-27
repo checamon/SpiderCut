@@ -1,10 +1,9 @@
 -- require('mobdebug').start()
-
-Segment = Class{}
+Segment = Class {}
 
 local symbols = {['up'] = 207, ['down'] = 209, ['right'] = 199, ['left'] = 182}
 
-function Segment:init(firstPoint, secondPoint,lineWidth, face, color)
+function Segment:init(firstPoint, secondPoint, lineWidth, face, color)
     self.firstPointX = firstPoint[1]
     self.firstPointY = firstPoint[2]
     self.secondPointX = secondPoint[1]
@@ -14,15 +13,16 @@ function Segment:init(firstPoint, secondPoint,lineWidth, face, color)
     self.horizontal = self.firstPointY == self.secondPointY
     self.face = face or ''
     self.direction = self:calculateDirection()
-    self.color = color or {r=255,g=255,b=255}
+    self.color = color or {r = 255, g = 255, b = 255}
 end
 
-function Segment:render()    
-    love.graphics.setColor(self.color.r,self.color.g, self.color.b,255)
+function Segment:render()
+    love.graphics.setColor(self.color.r, self.color.g, self.color.b, 255)
     love.graphics.setLineWidth(self.lineWidth)
-    love.graphics.line(self.firstPointX,self.firstPointY,self.secondPointX, self.secondPointY)
+    love.graphics.line(self.firstPointX, self.firstPointY, self.secondPointX,
+                       self.secondPointY)
 
-    love.graphics.setColor(255,255, 255, 255)
+    love.graphics.setColor(255, 255, 255, 255)
 
     -- debug
     -- love.graphics.setFont(gFonts['small'])
@@ -31,14 +31,18 @@ function Segment:render()
 end
 
 function Segment:segmentToPoints()
-    return self.firstPointX, self.firstPointY, self.secondPointX, self.secondPointY
+    return self.firstPointX, self.firstPointY, self.secondPointX,
+           self.secondPointY
 end
 
 function Segment:length()
-    return math.sqrt( (self.secondPointX - self.firstPointX) * (self.secondPointX - self.firstPointX) + (self.secondPointY - self.firstPointY) * (self.secondPointY - self.firstPointY) )
+    return math.sqrt((self.secondPointX - self.firstPointX) *
+                         (self.secondPointX - self.firstPointX) +
+                         (self.secondPointY - self.firstPointY) *
+                         (self.secondPointY - self.firstPointY))
 end
 
-function Segment:sideOfSegment(x,y)
+function Segment:sideOfSegment(x, y)
     if y < self.firstPointY and y < self.secondPointY then -- above
         return 'up'
     end
@@ -55,9 +59,7 @@ function Segment:sideOfSegment(x,y)
 end
 
 function Segment:debug(msg)
-    if not msg then
-        msg = ''
-    end
+    if not msg then msg = '' end
     -- print("Segment:debug ".. msg .." ...............")
     -- print("FirstPoint: "..tostring(self.firstPointX)..','..tostring(self.firstPointY))
     -- print("SecondPoint: "..tostring(self.secondPointX)..','..tostring(self.secondPointY))
@@ -72,35 +74,35 @@ function Segment:copy()
     copy.secondPointY = self.secondPointY
     copy.lineWidth = self.lineWidth
     copy.face = self.face
-    return Segment({copy.firstPointX,copy.firstPointY},{copy.secondPointX,copy.secondPointY},copy.lineWidth, copy.face)
+    return Segment({copy.firstPointX, copy.firstPointY},
+                   {copy.secondPointX, copy.secondPointY}, copy.lineWidth,
+                   copy.face)
 end
 
 function Segment:endEqualsStartOf(s)
     -- segments are linked at the end of this one
-    if self.secondPointX == s.firstPointX and 
-    self.secondPointY == s.firstPointY then
+    if self.secondPointX == s.firstPointX and self.secondPointY == s.firstPointY then
         return true
     end
     return false
 end
 function Segment:endEqualsEndOf(s)
     -- segments are linked at the end of this one
-    if self.secondPointX == s.secondPointX and self.secondPointY == s.secondPointY then
-        return true
-    end
+    if self.secondPointX == s.secondPointX and self.secondPointY ==
+        s.secondPointY then return true end
     return false
 end
 
 function Segment:startEqualsEndOf(s)
     -- segments are linked at the beginning of this one
-    if  self.firstPointX == s.secondPointX and self.firstPointY == s.secondPointY then
+    if self.firstPointX == s.secondPointX and self.firstPointY == s.secondPointY then
         return true
     end
     return false
 end
 function Segment:startEqualsStartOf(s)
     -- segments are linked at the beginning of this one
-    if  self.firstPointX == s.firstPointX and self.firstPointY == s.PointY then
+    if self.firstPointX == s.firstPointX and self.firstPointY == s.PointY then
         return true
     end
     return false
@@ -108,7 +110,7 @@ end
 
 function Segment:calculateDirection()
     local dir = ''
-    
+
     if self.vertical then
         if self.firstPointY < self.secondPointY then
             dir = 'down'
@@ -121,7 +123,7 @@ function Segment:calculateDirection()
         else
             dir = 'left'
         end
-    end            
+    end
     return dir
 end
 
@@ -129,32 +131,22 @@ function Segment:splitInTwoWithPoint(point) -- number
     local s1, s2 = {}
     if point > 0 then
         if self.vertical then
-            s1 = Segment(
-                {self.firstPointX, self.firstPointY},
-                {self.secondPointX, point},
-                self.lineWidth, self.face
-            )
-            s2 = Segment(
-                {self.firstPointX, point},
-                {self.secondPointX,self.secondPointY},
-                self.lineWidth, self.face
-            )
+            s1 = Segment({self.firstPointX, self.firstPointY},
+                         {self.secondPointX, point}, self.lineWidth, self.face)
+            s2 = Segment({self.firstPointX, point},
+                         {self.secondPointX, self.secondPointY}, self.lineWidth,
+                         self.face)
         else
-            s1 = Segment(
-                {self.firstPointX, self.firstPointY},
-                {point, self.secondPointY},
-                self.lineWidth, self.face
-            )
-            s2 = Segment(
-                {point, self.firstPointY},
-                {self.secondPointX,self.secondPointY},
-                self.lineWidth, self.face
-            )
+            s1 = Segment({self.firstPointX, self.firstPointY},
+                         {point, self.secondPointY}, self.lineWidth, self.face)
+            s2 = Segment({point, self.firstPointY},
+                         {self.secondPointX, self.secondPointY}, self.lineWidth,
+                         self.face)
         end
-    else 
-        return nil, nil 
+    else
+        return nil, nil
     end
-    
+
     return s1, s2
 end
 
@@ -181,16 +173,14 @@ function Segment:joinPerpendicular(s)
     -- changes the self, not the parameter
     if s.vertical then
         local sx = s.firstPointX
-        if math.abs(self.firstPointX - sx) <
-        math.abs(self.secondPointX - sx) then
+        if math.abs(self.firstPointX - sx) < math.abs(self.secondPointX - sx) then
             self.firstPointX = sx
         else
             self.secondPointX = sx
         end
     else
         local sy = s.firstPointY
-        if math.abs(self.firstPointY - sy) <
-        math.abs(self.secondPointY - sy) then
+        if math.abs(self.firstPointY - sy) < math.abs(self.secondPointY - sy) then
             self.firstPointY = sy
         else
             self.secondPointY = sy
@@ -249,24 +239,24 @@ function Segment:compare(s)
     if self.vertical and s.vertical then
         if self.firstPointX == s.firstPointX then
             return 0
-        else 
+        else
             return self.firstPointX - s.firstPointX
         end
     elseif self.horizontal and s.horizontal then
         if self.firstPointY == s.firstPointY then
             return 0
-        else 
+        else
             return self.firstPointY - s.firstPointY
         end
     else
-        return (self.firstPointX + self.firstPointY +
-        self.secondPointX + self.secondPointY) - (
-            s.firstPointX + s.firstPointY + s.secondPointX
-            +s.secondPointY)
+        return (self.firstPointX + self.firstPointY + self.secondPointX +
+                   self.secondPointY) -
+                   (s.firstPointX + s.firstPointY + s.secondPointX +
+                       s.secondPointY)
     end
 end
 
-function Segment:splitInThreeWithSegments(s1,s2)
+function Segment:splitInThreeWithSegments(s1, s2)
     local p1, p2, p3, t = {}
     if self.direction == 'down' or self.direction == 'right' then
         if s1:compare(s2) < 0 then
@@ -286,23 +276,32 @@ function Segment:splitInThreeWithSegments(s1,s2)
         end
     end
 
-    return p1,p2,p3
+    return p1, p2, p3
 end
 
-function Segment:insert(list)
-    
-end
+function Segment:insert(list) end
 
 function Segment:pointInSegment(point)
+    -- remove "+ 8" and replace by sprite.width / 2
     if self.direction == 'up' or self.direction == 'down' then
-        if point[1] <= self.firstPointX + 1 and 
-            point[1] >= self.firstPointX - 1 then
-            return true
+        if point[1] <= self.firstPointX + 1 and point[1] >= self.firstPointX - 1 then
+            if self.direction == 'down' then
+                if point[2] >= self.firstPointY and point[2] <=
+                    self.secondPointY then return true end
+            else
+                if point[2] >= self.secondPointY and point[2] <=
+                    self.firstPointY then return true end
+            end
         end
     else
-        if point[2] <= self.firstPointY + 1 and 
-            point[2] >= self.firstPointY - 1 then
-            return true
+        if point[2] <= self.firstPointY + 1 and point[2] >= self.firstPointY - 1 then
+            if self.direction == 'right' then
+                if point[1] >= self.firstPointX and point[1] <=
+                    self.secondPointX then return true end
+            else
+                if point[1] >= self.secondPointX and point[1] <=
+                    self.firstPointX then return true end
+            end
         end
     end
 

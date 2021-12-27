@@ -9,9 +9,11 @@ function EntityWalkState:init(entity)
 end
 
 function EntityWalkState:update(dt)
+    -- print("EntityWalkState - Current Position:" .. tostring(self.entity.x) .. "," .. tostring(self.entity.y))
     if self.entity.direction == 'up' then
-        if self.entity:isMoveAllowed({self.entity.x, self.entity.y - self.entity.walkingSpeed * dt}) then
-            self.entity.y = self.entity.y - self.entity.walkingSpeed * dt            
+        local move = {math.floor(self.entity.x + 0.5), math.floor(self.entity.y - self.entity.walkingSpeed * dt + 0.5)}
+        if self.entity:isMoveAllowed(move) then
+            self.entity.y = move[2]           
             if self.entity.y + TILE_SIZE / 2 < LEVEL_RENDER_OFFSET_TOP - 2  then
                 self.entity.y = self.entity.y + self.entity.walkingSpeed * dt
                 Event.dispatch('back-to-wall')        
@@ -19,8 +21,9 @@ function EntityWalkState:update(dt)
             end
         end
     elseif self.entity.direction == 'down' then
-        if self.entity:isMoveAllowed({self.entity.x, self.entity.y + self.entity.walkingSpeed * dt}) then
-            self.entity.y = self.entity.y + self.entity.walkingSpeed * dt
+        local move = {math.floor(self.entity.x + 0.5), math.floor(self.entity.y + self.entity.walkingSpeed * dt + 0.5)}
+        if self.entity:isMoveAllowed(move) then
+            self.entity.y = move[2]
             if self.entity.y + TILE_SIZE / 2  > VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET + 2 then
                 self.entity.y = self.entity.y - self.entity.walkingSpeed * dt
                 Event.dispatch('back-to-wall')
@@ -28,8 +31,9 @@ function EntityWalkState:update(dt)
             end
         end
     elseif self.entity.direction == 'right' then
-        if self.entity:isMoveAllowed({self.entity.x + self.entity.walkingSpeed * dt, self.entity.y}) then
-            self.entity.x = self.entity.x + self.entity.walkingSpeed * dt
+        local move = {math.floor(self.entity.x + self.entity.walkingSpeed * dt + 0.5), math.floor(self.entity.y + 0.5)}
+        if self.entity:isMoveAllowed(move) then
+            self.entity.x = move[1]
             if self.entity.x + TILE_SIZE / 2 > VIRTUAL_WIDTH - TILE_SIZE / 2 + 2 or self.entity.previousdirection == 'left' then
                 self.entity.x = self.entity.x - self.entity.walkingSpeed * dt
                 Event.dispatch('back-to-wall')
@@ -37,8 +41,9 @@ function EntityWalkState:update(dt)
             end
         end
     elseif self.entity.direction == 'left' then
-        if self.entity:isMoveAllowed({self.entity.x - self.entity.walkingSpeed * dt, self.entity.y}) then
-            self.entity.x = self.entity.x - self.entity.walkingSpeed * dt
+        local move = {math.floor(self.entity.x - self.entity.walkingSpeed * dt + 0.5),math.floor(self.entity.y + 0.5)}
+        if self.entity:isMoveAllowed(move) then
+            self.entity.x = move[1]
             if self.entity.x < 0 or self.entity.previousdirection == 'right' then
                 self.entity.x = self.entity.x + self.entity.walkingSpeed * dt
                 Event.dispatch('back-to-wall')

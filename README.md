@@ -10,6 +10,4 @@ Lua game inspired by an old arcade game(Qix/Gals Panic) using LOVE2D for Linux.
 
 - Add more pictures (manga?)
 
-- Fix Mesh
-
 - Fix balls sometimes attaching to the lines
