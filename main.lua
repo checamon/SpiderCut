@@ -60,7 +60,11 @@ function love.keypressed(key)
     if key == 'escape' then
         love.event.quit()
     end
- 
+
+    if key == 'f' then
+        push:switchFullscreen()
+    end
+    
     love.keyboard.keysPressed[key] = true
 end
 

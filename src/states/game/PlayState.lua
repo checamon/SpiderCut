@@ -5,12 +5,13 @@ PlayState = Class{__includes = BaseState}
 function PlayState:init()
     self.name = 'PlayState'
     self.stage = 1
-    self.level = Level(self.stage)
+    self.level = Level(LEVELS_DEF, self.stage)
     self.player = Player ( ENTITY_DEFS['player'] , self.level)
     self.level.player = self.player
     self.balls = {}
     self:createBalls()
     self.level.balls = self.balls
+    self.clock = Clock(30,"down")
 
     gSounds['music']:setLooping(true)
     gSounds['music']:play()
@@ -23,6 +24,7 @@ end
 function PlayState:update(dt)
     self.level:update(dt)
     self.player:update(dt)
+    self.clock:update(dt)
     self:updateBalls(dt, self.level)
     self:checkEndLevel(self.level)
 end
@@ -39,6 +41,7 @@ function PlayState:render()
     love.graphics.printf('Stage '..tostring(self.stage), 
         0, 5, VIRTUAL_WIDTH, 'center')
 
+    self.clock:render()
     self.level:render()
     self.player:render()
     self:renderBalls(dt)
@@ -83,6 +86,13 @@ function PlayState:checkEndLevel (level)
     if level:getPerimeter() < 500 then
         self:nextStage()
     end
+
+    -- check if clock finished counting limit time
+    if self.clock.direction == 'up' and self.clock.currentTime * 1 > self.clock.timeLimit then
+        self:gameOver()
+    elseif self.clock.direction == 'down' and self.clock.currentTime * 1 <= 0 then
+        self:gameOver()
+    end
 end
 
 function PlayState:renderBalls(dt)
@@ -101,7 +111,8 @@ function PlayState:nextStage()
     gStateStack:push(FadeOutState({
         r = 255/255, g = 255/255, b = 255/255}, 1,function()
         self.stage = self.stage + 1
-        self.level = Level(self.stage)
+        self.level = Level(LEVELS_DEF,self.stage)
+        self.clock = Clock(self.clock.timeLimit + 3 * #self.balls,"down")
         self.player:reset()
         self.player.score = self.player.score + self.player.multiplier * #self.balls
         self.player.multiplier = self.player.multiplier + #self.balls

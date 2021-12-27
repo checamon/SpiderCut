@@ -1,11 +1,11 @@
 -- require('mobdebug').start()
 Level = Class {}
 
-function Level:init(stage)
+function Level:init(def, stage)
     self.stage = stage
     self.points = {}
     self.player = {}
-    self.segments = self:createLevel()
+    self.segments = self:createLevelFromDef(def, stage)
     self.polygon = self:createPolygon()
     self.mesh = poly2mesh(self.points)
 end
@@ -29,6 +29,14 @@ function Level:renderBackground()
     if self.mesh:type() == "Mesh" then 
         love.graphics.draw(self.mesh, 0, 0) 
     end
+end
+
+function Level:createLevelFromDef(def, stage)
+    local level = {}
+    for i, seg in pairs(def[1].segments) do
+        table.insert(level, Segment(seg.p1, seg.p2, seg.width, seg.face) )
+    end
+    return level
 end
 
 function Level:createLevel()

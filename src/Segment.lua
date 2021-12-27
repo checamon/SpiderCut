@@ -17,12 +17,12 @@ function Segment:init(firstPoint, secondPoint, lineWidth, face, color)
 end
 
 function Segment:render()
-    love.graphics.setColor(self.color.r, self.color.g, self.color.b, 255)
+    love.graphics.setColor(self.color.r, self.color.g, self.color.b, 1)
     love.graphics.setLineWidth(self.lineWidth)
     love.graphics.line(self.firstPointX, self.firstPointY, self.secondPointX,
                        self.secondPointY)
 
-    love.graphics.setColor(255, 255, 255, 255)
+    love.graphics.setColor(1, 1, 1, 1)
 
     -- debug
     -- love.graphics.setFont(gFonts['small'])

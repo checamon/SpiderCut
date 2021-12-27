@@ -10,6 +10,7 @@ Timer = require 'lib/knife.timer'
 require 'src/Animation'
 require 'src/constants'
 require 'src/StateMachine'
+require 'src/Clock'
 require 'src/Util'
 
 require 'src/Level'

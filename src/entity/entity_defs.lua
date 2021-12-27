@@ -45,3 +45,35 @@ ENTITY_DEFS = {
         }
     }
 }
+
+LEVELS_DEF = {
+    [1] = {
+        segments = 
+        {
+            {
+                p1 = {LEVEL_RENDER_OFFSET, LEVEL_RENDER_OFFSET_TOP},
+                p2 = {VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET, LEVEL_RENDER_OFFSET_TOP},
+                width = LINE_WIDTH,
+                face = 'down'
+            },
+            {
+                p1 = {VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET, LEVEL_RENDER_OFFSET_TOP},
+                p2 = {VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET},
+                width = LINE_WIDTH,
+                face = 'left'
+            },
+            {
+                p1 = {VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET},
+                p2 = {LEVEL_RENDER_OFFSET, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET},
+                width = LINE_WIDTH,
+                face = 'up'
+            },
+            {
+                p1 = {LEVEL_RENDER_OFFSET, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET},
+                p2 = {LEVEL_RENDER_OFFSET, LEVEL_RENDER_OFFSET_TOP},
+                width= LINE_WIDTH,
+                face = 'right'
+            },
+        },
+    },    
+}
