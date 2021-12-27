@@ -4,7 +4,7 @@ function Clock:init(timelimit, direction)
     self.timeLimit = timelimit
     self.direction = direction
     self.color = {56 / 255, 56 / 255, 56 / 255, 1}
-    self.currentTime = ""
+    self.currentTime = "0"
     self.timer = 0
     self.startTime = self:getOsTime()
 end
@@ -19,7 +19,6 @@ function Clock:update(dt)
 end
 
 function Clock:render()
-    TODO TODO
     if self.currentTime * 1 <= 10 then
         local a = math.abs(math.cos(love.timer.getTime() * .85 % 2 * math.pi))
         love.graphics.setColor(.8, .12, .12, a)
