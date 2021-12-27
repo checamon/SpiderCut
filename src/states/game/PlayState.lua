@@ -24,6 +24,7 @@ function PlayState:update(dt)
     self.level:update(dt)
     self.player:update(dt)
     self:updateBalls(dt, self.level)
+    self:checkEndLevel(self.level)
 end
 
 function PlayState:render()
@@ -70,6 +71,18 @@ function PlayState:updateBalls(dt, level)
         end        
     end
 
+    if #self.balls <= 0 then
+        -- game over - reset level
+        self:gameOver()
+    end
+
+    -- check perimeter of level, if low enough, create new level move on to the next stage
+    if level:getPerimeter() < 500 then
+        self:nextStage()
+    end
+end
+
+function PlayState:checkEndLevel (level)
     if #self.balls <= 0 then
         -- game over - reset level
         self:gameOver()

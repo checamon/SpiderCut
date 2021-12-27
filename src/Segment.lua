@@ -292,3 +292,19 @@ end
 function Segment:insert(list)
     
 end
+
+function Segment:pointInSegment(point)
+    if self.direction == 'up' or self.direction == 'down' then
+        if point[1] <= self.firstPointX + 1 and 
+            point[1] >= self.firstPointX - 1 then
+            return true
+        end
+    else
+        if point[2] <= self.firstPointY + 1 and 
+            point[2] >= self.firstPointY - 1 then
+            return true
+        end
+    end
+
+    return false
+end

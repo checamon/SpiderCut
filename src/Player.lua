@@ -38,6 +38,15 @@ function Player:init(def, level )
     end)
 end
 
+function Player:isMoveAllowed(point)
+    for i,segment in pairs (self.trailSegments) do
+        if segment:pointInSegment(point) then
+            return false
+        end
+    end
+    return true
+end
+
 function Player:changeState(state)
     Entity.changeState(self,state)    
 end
@@ -88,6 +97,7 @@ function Player:onEdge()
 end
 
 function Player:onWalking()
+    -- if position of player collides with its own trail, stop motion
     if #self.trail > 1 then
         table.remove(self.trail)
         table.remove(self.trailSegments)
@@ -113,9 +123,6 @@ function Player:onChangeDirection()
             table.remove(self.trailSegments)
         end
     
-        local k = #self.trailSegments
-        local j = #self.trail + 1
-
         table.insert(self.trail,
             {['x'] = self.x + self.width/2,['y'] = self.y + self.height/2}
         )
