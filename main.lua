@@ -65,6 +65,11 @@ function love.keypressed(key)
         push:switchFullscreen()
     end
     
+    if key == 'r' then
+        gStateStack:clear()
+        gStateStack:push(StartState())
+    end
+
     love.keyboard.keysPressed[key] = true
 end
 

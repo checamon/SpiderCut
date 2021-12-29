@@ -22,13 +22,15 @@ function Ball:reset()
 end
 
 function Ball:update(dt,level)
-    local tempX = self.x + self.dx * dt
-    local tempY = self.y + self.dy * dt
+    local tempX = math.floor((self.x + self.dx * dt) + 0.5)
+    local tempY = math.floor((self.y + self.dy * dt) + 0.5)
 
     local trailSeg = level:pointOnEdge(tempX,tempY,level.player.trailSegments)
     if trailSeg then
         self.hitPlayer = true
+        -- print("ball hits player")
         gSounds['hit']:play()
+        return
     end
 
     local i, segment = level:getTouchingSegment(tempX,tempY)
@@ -49,8 +51,9 @@ function Ball:update(dt,level)
         gSounds['blip']:play()
     end
 
-    if not (level:insideBounds(tempX,tempY) or level:pointOnEdge(tempX,tempY)) then
+    if not level:insideBounds(tempX,tempY) and not level:pointOnEdge(tempX,tempY) then
         self.remove = true
+        print("ball outside or touching segment")
     end
 
     self.x = self.x + self.dx * dt
@@ -60,8 +63,9 @@ function Ball:update(dt,level)
 end
 
 function Ball:render()
-    love.graphics.setColor(255/255,1/255,1/255,255/255)
+    love.graphics.setColor(1,0.1,0.1,1)
     love.graphics.circle('fill', self.x, self.y, self.width/2)
+    love.graphics.setColor(1,1,1,1)
 end
 
 function Ball:getCollisionDirection(segment,x,y)

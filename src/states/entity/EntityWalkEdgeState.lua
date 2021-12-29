@@ -10,8 +10,8 @@ end
 
 function EntityWalkEdgeState:update(dt)
 
-    local dy = self.entity.walkingSpeed * dt
-    local dx = self.entity.walkingSpeed * dt
+    local dy = math.floor(self.entity.walkingSpeed * dt + 0.5)
+    local dx = math.floor(self.entity.walkingSpeed * dt + 0.5)
 
     if self.entity.direction == 'left' then
         if self.entity.level:pointOnEdge(self.entity.x - dx + TILE_SIZE / 2, self.entity.y + TILE_SIZE / 2) then

@@ -5,64 +5,98 @@ function Level:init(def, stage)
     self.stage = stage
     self.points = {}
     self.player = {}
-    self.segments = self:createLevelFromDef(def, stage)
+    self.segments = self:createLevelFromDef(def)
     self.polygon = self:createPolygon()
     self.mesh = poly2mesh(self.points)
+    self.balls = self:createBallsFromDef(def)
+    self.clock = Clock(def.timeLimit, "down")
 end
 
 function Level:update(dt)
     self.mesh = poly2mesh(self.points)
+    self:updateBalls(dt)
+    self.clock:update(dt)
 end
 
 function Level:render()
     self:renderBackground()
     self:renderOuterSegments()
+    self:renderBalls()
+    self.clock:render()
 end
 
 function Level:renderOuterSegments()
-    for k, segment in pairs(self.segments) do segment:render() end
-end
-
-function Level:renderBackground()
-    love.graphics.draw(gImages[(self.stage % #gImages)], LEVEL_RENDER_OFFSET,
-                       LEVEL_RENDER_OFFSET_TOP)
-    if self.mesh:type() == "Mesh" then 
-        love.graphics.draw(self.mesh, 0, 0) 
+    for k, segment in pairs(self.segments) do
+        segment:render()
     end
 end
 
-function Level:createLevelFromDef(def, stage)
+function Level:renderBackground()
+    local nextImg = self.stage % (#gImages + 1)
+    if nextImg == 0 then
+        nextImg = 1
+    end
+    love.graphics.draw(gImages[nextImg], LEVEL_RENDER_OFFSET, LEVEL_RENDER_OFFSET_TOP)
+    if self.mesh:type() == "Mesh" then
+        love.graphics.draw(self.mesh, 0, 0)
+    end
+end
+
+function Level:createLevelFromDef(def)
     local level = {}
-    for i, seg in pairs(def[1].segments) do
-        table.insert(level, Segment(seg.p1, seg.p2, seg.width, seg.face) )
+    for i, seg in pairs(def.segments) do
+        table.insert(level, Segment(seg.p1, seg.p2, seg.width, seg.face))
     end
     return level
 end
 
 function Level:createLevel()
     local level = {
-        [1] = Segment({LEVEL_RENDER_OFFSET, LEVEL_RENDER_OFFSET_TOP}, {
-            VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET, LEVEL_RENDER_OFFSET_TOP
-        }, .5, 'down'),
-        [2] = Segment({
-            VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET, LEVEL_RENDER_OFFSET_TOP
-        }, {
-            VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET,
-            VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET
-        }, .5, 'left'),
-        [3] = Segment({
-            VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET,
-            VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET
-        }, {LEVEL_RENDER_OFFSET, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET}, .5, 'up'),
-        [4] = Segment({
-            LEVEL_RENDER_OFFSET, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET
-        }, {LEVEL_RENDER_OFFSET, LEVEL_RENDER_OFFSET_TOP}, .5, 'right')
+        [1] = Segment(
+            {LEVEL_RENDER_OFFSET, LEVEL_RENDER_OFFSET_TOP},
+            {
+                VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET,
+                LEVEL_RENDER_OFFSET_TOP
+            },
+            .5,
+            "down"
+        ),
+        [2] = Segment(
+            {
+                VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET,
+                LEVEL_RENDER_OFFSET_TOP
+            },
+            {
+                VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET,
+                VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET
+            },
+            .5,
+            "left"
+        ),
+        [3] = Segment(
+            {
+                VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET,
+                VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET
+            },
+            {LEVEL_RENDER_OFFSET, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET},
+            .5,
+            "up"
+        ),
+        [4] = Segment(
+            {
+                LEVEL_RENDER_OFFSET,
+                VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET
+            },
+            {LEVEL_RENDER_OFFSET, LEVEL_RENDER_OFFSET_TOP},
+            .5,
+            "right"
+        )
     }
     -- local level = {
     --     [1] = Segment({LEVEL_RENDER_OFFSET,LEVEL_RENDER_OFFSET_TOP},{VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET, LEVEL_RENDER_OFFSET_TOP},.5),
     --     [2] = Segment({VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET, LEVEL_RENDER_OFFSET_TOP},{VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET},.5),
     --     [3] = Segment({VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET},{VIRTUAL_WIDTH / 2 + 10, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET},.5),
-    --     [4] = Segment({VIRTUAL_WIDTH / 2 + 10, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET},{VIRTUAL_WIDTH / 2 + 10, VIRTUAL_HEIGHT / 2},.5),        
+    --     [4] = Segment({VIRTUAL_WIDTH / 2 + 10, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET},{VIRTUAL_WIDTH / 2 + 10, VIRTUAL_HEIGHT / 2},.5),
     --     [5] = Segment({VIRTUAL_WIDTH / 2 + 10, VIRTUAL_HEIGHT / 2},{LEVEL_RENDER_OFFSET,VIRTUAL_HEIGHT / 2},.5),
     --     [6] = Segment({LEVEL_RENDER_OFFSET,VIRTUAL_HEIGHT / 2},{LEVEL_RENDER_OFFSET,LEVEL_RENDER_OFFSET_TOP},.5)
     -- }
@@ -74,8 +108,10 @@ function Level:insideBounds2(x, y)
     return shape:testPoint(x, y)
 end
 
-function Level:insideBounds(x, y, segments)
-    if not segments then segments = self.segments end
+function Level:insideBounds4(x, y, segments)
+    if not segments then
+        segments = self.segments
+    end
 
     local up, down, left, right = false
     local upSeg, downSeg, leftSeg, rightSeg = nil
@@ -84,40 +120,40 @@ function Level:insideBounds(x, y, segments)
     for i, segment in pairs(segments) do
         -- check raycast on y axis
         if segment.vertical then
-            if y <= math.max(segment.firstPointY, segment.secondPointY) and y >=
-                math.min(segment.firstPointY, segment.secondPointY) then
+            if
+                y <= math.max(segment.firstPointY, segment.secondPointY) and
+                    y >= math.min(segment.firstPointY, segment.secondPointY)
+             then
                 if x <= segment.firstPointX then
                     if not rightSeg then
                         rightSeg = segment
-                    elseif math.abs(segment.firstPointX - x) <
-                        math.abs(rightSeg.firstPointX - x) then
+                    elseif math.abs(segment.firstPointX - x) < math.abs(rightSeg.firstPointX - x) then
                         rightSeg = segment
                     end
                 else
                     if not leftSeg then
                         leftSeg = segment
-                    elseif math.abs(segment.firstPointX - x) <
-                        math.abs(leftSeg.firstPointX - x) then
+                    elseif math.abs(segment.firstPointX - x) < math.abs(leftSeg.firstPointX - x) then
                         leftSeg = segment
                     end
                 end
             end
         end
         if segment.horizontal then
-            if x <= math.max(segment.firstPointX, segment.secondPointX) and x >=
-                math.min(segment.firstPointX, segment.secondPointX) then
+            if
+                x <= math.max(segment.firstPointX, segment.secondPointX) and
+                    x >= math.min(segment.firstPointX, segment.secondPointX)
+             then
                 if y <= segment.firstPointY then
                     if not downSeg then
                         downSeg = segment
-                    elseif math.abs(segment.firstPointY - y) <
-                        math.abs(downSeg.firstPointY - y) then
+                    elseif math.abs(segment.firstPointY - y) < math.abs(downSeg.firstPointY - y) then
                         downSeg = segment
                     end
                 else
                     if not upSeg then
                         upSeg = segment
-                    elseif math.abs(segment.firstPointY - y) <
-                        math.abs(upSeg.firstPointY - y) then
+                    elseif math.abs(segment.firstPointY - y) < math.abs(upSeg.firstPointY - y) then
                         upSeg = segment
                     end
                 end
@@ -125,11 +161,15 @@ function Level:insideBounds(x, y, segments)
         end
     end
     if not rightSeg or not leftSeg or not upSeg or not downSeg then
+        print("ball outside - seg check")
         return false
     end
 
-    if rightSeg.face ~= 'left' or leftSeg.face ~= 'right' or upSeg.face ~=
-        'down' or downSeg.face ~= 'up' then return false end
+    if rightSeg.face ~= "left" or leftSeg.face ~= "right" or upSeg.face ~= "down" or downSeg.face ~= "up" then
+        print("ball outside - face check")
+        return false
+    end
+
     return true
 end
 
@@ -140,15 +180,24 @@ function Level:insideBounds3(x, y)
     local j = #self.polygon
     local polygon = self.polygon
     for i = 1, #polygon do
-        if (polygon[i].y < y and polygon[j].y >= y or polygon[j].y < y and
-            polygon[i].y >= y) then
-            if (polygon[i].x + (y - polygon[i].y) /
-                (polygon[j].y - polygon[i].y) * (polygon[j].x - polygon[i].x) <
-                x) then oddNodes = not oddNodes end
+        if (polygon[i].y < y and polygon[j].y >= y or polygon[j].y < y and polygon[i].y >= y) then
+            if (polygon[i].x + (y - polygon[i].y) / (polygon[j].y - polygon[i].y) * (polygon[j].x - polygon[i].x) < x) then
+                oddNodes = not oddNodes
+            end
         end
         j = i
     end
     return oddNodes
+end
+
+function Level:insideBounds(x, y, segments)
+    if not segments then
+        segments = self.segments
+    end
+    -- prepare shape
+    print_r(self.polygon)
+
+    return PointWithinShape(self.polygon, x, y)
 end
 
 function Level:createPolygon()
@@ -159,16 +208,16 @@ function Level:createPolygon()
     for i, segment in ipairs(self.segments) do
         polygon[i] = {}
         polygon[i + 1] = {}
-        polygon[i].x, polygon[i].y, polygon[i + 1].x, polygon[i + 1].y =
-            segment:segmentToPoints()
+        polygon[i].x, polygon[i].y, polygon[i + 1].x, polygon[i + 1].y = segment:segmentToPoints()
         polygonPoints[j] = polygon[i].x
         polygonPoints[j + 1] = polygon[i].y
         polygonPoints[j + 2] = polygon[i + 1].x
         polygonPoints[j + 3] = polygon[i + 1].y
 
-        table.insert(pointlist, polygon[i].x)
-        table.insert(pointlist, polygon[i].y)
-
+        if polygon[i + 1].x ~= polygon[i].x or polygon[i + 1].y ~= polygon[i].y then
+            table.insert(pointlist, polygon[i].x)
+            table.insert(pointlist, polygon[i].y)
+        end
         j = j + 4
         i = i + 1
     end
@@ -178,25 +227,30 @@ function Level:createPolygon()
 end
 
 function Level:pointOnEdge(x, y, segments)
-    if not segments then segments = self.segments end
+    if not segments then
+        segments = self.segments
+    end
     local margin = 2
     for i, segment in pairs(segments) do
         if segment.vertical then -- vertical line
-            if x >= segment.firstPointX - margin and x <= segment.firstPointX +
-                margin and y <=
-                math.max(segment.firstPointY, segment.secondPointY) and y >=
-                math.min(segment.firstPointY, segment.secondPointY) then
+            if
+                x >= segment.firstPointX - margin and x <= segment.firstPointX + margin and
+                    y <= math.max(segment.firstPointY, segment.secondPointY) and
+                    y >= math.min(segment.firstPointY, segment.secondPointY)
+             then
                 return true
             end
         elseif segment.horizontal then -- horizontal line
-            if y >= segment.firstPointY - margin and y <= segment.firstPointY +
-                margin and x <=
-                math.max(segment.firstPointX, segment.secondPointX) and x >=
-                math.min(segment.firstPointX, segment.secondPointX) then
+            if
+                y >= segment.firstPointY - margin and y <= segment.firstPointY + margin and
+                    x <= math.max(segment.firstPointX, segment.secondPointX) and
+                    x >= math.min(segment.firstPointX, segment.secondPointX)
+             then
                 return true
             end
         end
     end
+    -- print("ball pointOnEdge is false")
     return false
 end
 
@@ -204,17 +258,19 @@ function Level:getTouchingSegment(x, y)
     local margin = 2
     for i, segment in pairs(self.segments) do
         if segment.vertical then -- vertical line
-            if x >= segment.firstPointX - margin and x <= segment.firstPointX +
-                margin and y <=
-                math.max(segment.firstPointY, segment.secondPointY) and y >=
-                math.min(segment.firstPointY, segment.secondPointY) then
+            if
+                x >= segment.firstPointX - margin and x <= segment.firstPointX + margin and
+                    y <= math.max(segment.firstPointY, segment.secondPointY) and
+                    y >= math.min(segment.firstPointY, segment.secondPointY)
+             then
                 return i, segment
             end
         elseif segment.horizontal then -- horizontal line
-            if y >= segment.firstPointY - margin and y <= segment.firstPointY +
-                margin and x <=
-                math.max(segment.firstPointX, segment.secondPointX) and x >=
-                math.min(segment.firstPointX, segment.secondPointX) then
+            if
+                y >= segment.firstPointY - margin and y <= segment.firstPointY + margin and
+                    x <= math.max(segment.firstPointX, segment.secondPointX) and
+                    x >= math.min(segment.firstPointX, segment.secondPointX)
+             then
                 return i, segment
             end
         end
@@ -223,15 +279,12 @@ function Level:getTouchingSegment(x, y)
 end
 
 function Level:cutLevel()
-
     local newSegs = self.player.trailSegments
-    local startSegi, startSeg = self.player.trailStartSegment[1],
-                                self.player.trailStartSegment[2]
-    local endSegi, endSeg = self.player.trailFinishSegment[1],
-                            self.player.trailFinishSegment[2]
+    local startSegi, startSeg = self.player.trailStartSegment[1], self.player.trailStartSegment[2]
+    local endSegi, endSeg = self.player.trailFinishSegment[1], self.player.trailFinishSegment[2]
     local first = 0
     local last = 0
-    local firstFace = ''
+    local firstFace = ""
 
     -- check if it is same start and finish segment
     if startSegi == endSegi then
@@ -259,11 +312,12 @@ function Level:cutLevel()
         while k <= #self.segments do
             -- print(" segment to be inserted "..tostring(k))
             if k == startSegi and not insertedNewSegs then
+                -- print_r(new)
+                -- print("-- finished inserting new segments and parts")
                 -- print("Reached the segment being cut")
                 -- print_r(self.segments[k])
                 -- print("split the segment")
-                part1, temp, part2 = self.segments[k]:splitInThreeWithSegments(
-                                         newSegs[1], newSegs[#newSegs])
+                part1, temp, part2 = self.segments[k]:splitInThreeWithSegments(newSegs[1], newSegs[#newSegs])
                 -- print("part1")
                 part1:debug()
                 -- print("part2")
@@ -285,8 +339,6 @@ function Level:cutLevel()
                 insertedNewSegments = true
                 new[j] = part2
                 j = j + 1
-                -- print_r(new)
-                -- print("-- finished inserting new segments and parts")
             else
                 new[j] = self.segments[k]:copy()
                 j = j + 1
@@ -318,20 +370,21 @@ function Level:cutLevel()
             -- print("-----start Loop for "..tostring(k).."-----")
             if k == startSegi and not insertedNewSegments then
                 board2StartSegi = k
-                -- print("-- this segment is the start segment and not inserted new segments yet") 
-                -- print("newsegs[1] is joined perpendicular to k segment:")              
+                -- print("-- this segment is the start segment and not inserted new segments yet")
+                -- print("newsegs[1] is joined perpendicular to k segment:")
                 newSegs[1]:debug()
                 newSegs[1]:joinPerpendicular(self.segments[k])
                 newSegs[1]:debug()
                 -- print("newSegs[1] is joined -- finished")
-                local startPart1, startPart2 =
-                    self.segments[k]:splitInTwoWithSegment(newSegs[1])
+                local startPart1, startPart2 = self.segments[k]:splitInTwoWithSegment(newSegs[1])
                 -- print("-- Segment k split into 2 segments by newsegs[1]: ")
                 startPart1:debug()
                 startPart2:debug()
 
-                if self.segments[last]:endEqualsStartOf(self.segments[k]) or
-                    self.segments[last]:startEqualsStartOf(self.segments[k]) then -- last one is linked to the start of this one
+                if
+                    self.segments[last]:endEqualsStartOf(self.segments[k]) or
+                        self.segments[last]:startEqualsStartOf(self.segments[k])
+                 then -- last one is linked to the start of this one
                     -- keep first part of segment
                     -- print("-- keep first part of the k segment")
                     self.segments[k] = startPart1
@@ -348,7 +401,7 @@ function Level:cutLevel()
                 -- print("-- before checking for inserted new segments - Board1")
                 -- print_r(board1)
                 if not insertedNewSegments then
-                    k = endSegi -- skip to last segment to cut and insert it as well  
+                    k = endSegi -- skip to last segment to cut and insert it as well
                     last = k - 1
                     board2EndSegi = k
                     newSegs[#newSegs]:joinPerpendicular(self.segments[k])
@@ -360,18 +413,19 @@ function Level:cutLevel()
                     end
                     -- print_r(board1)
 
-                    local endPart1, endPart2 =
-                        self.segments[k]:splitInTwoWithSegment(newSegs[#newSegs])
+                    local endPart1, endPart2 = self.segments[k]:splitInTwoWithSegment(newSegs[#newSegs])
                     -- print("-- proceed to insert the second split segment")
-                    if self.segments[last]:endEqualsEndOf(self.segments[k]) or
-                        self.segments[last]:startEqualsEndOf(self.segments[k]) then -- next one is linked to the start of this one
+                    if
+                        self.segments[last]:endEqualsEndOf(self.segments[k]) or
+                            self.segments[last]:startEqualsEndOf(self.segments[k])
+                     then -- next one is linked to the start of this one
+                        -- print("-- keep first part of the k segment")
                         self.segments[k] = endPart1
                         savedEnd = endPart2
-                        -- print("-- keep first part of the k segment")
                     else
+                        -- print("-- keep second part of the k segment")
                         self.segments[k] = endPart2
                         savedEnd = endPart1
-                        -- print("-- keep second part of the k segment")
                     end
 
                     board1[j] = self.segments[k]:copy()
@@ -381,20 +435,21 @@ function Level:cutLevel()
                 end
             elseif k == endSegi and not insertedNewSegments then
                 board2StartSegi = k
-                -- print("-- this segment is the end segment and not inserted new segments yet") 
-                -- print("newsegs[#newSegs] is joined perpendicular to k segment:")              
+                -- print("-- this segment is the end segment and not inserted new segments yet")
+                -- print("newsegs[#newSegs] is joined perpendicular to k segment:")
                 newSegs[#newSegs]:debug()
                 newSegs[#newSegs]:joinPerpendicular(self.segments[k])
                 newSegs[#newSegs]:debug()
                 -- print("newSegs[#newSegs] is joined -- finished")
-                local endPart1, endPart2 =
-                    self.segments[k]:splitInTwoWithSegment(newSegs[#newSegs])
+                local endPart1, endPart2 = self.segments[k]:splitInTwoWithSegment(newSegs[#newSegs])
                 -- print("-- Segment k split into 2 segments by newsegs[#newSegs]: ")
                 endPart1:debug()
                 endPart2:debug()
 
-                if self.segments[last]:endEqualsStartOf(self.segments[k]) or
-                    self.segments[last]:startEqualsStartOf(self.segments[k]) then -- last one is linked to the start of this one
+                if
+                    self.segments[last]:endEqualsStartOf(self.segments[k]) or
+                        self.segments[last]:startEqualsStartOf(self.segments[k])
+                 then -- last one is linked to the start of this one
                     -- keep first part of segment
                     self.segments[k] = endPart1
                     savedEnd = endPart2
@@ -407,7 +462,7 @@ function Level:cutLevel()
                 j = j + 1
 
                 if not insertedNewSegments then
-                    k = startSegi -- skip to last segment to cut and insert it as well  
+                    k = startSegi -- skip to last segment to cut and insert it as well
                     last = k - 1
                     board2EndSegi = k
                     newSegs[1]:joinPerpendicular(self.segments[k])
@@ -422,14 +477,15 @@ function Level:cutLevel()
                     end
                     -- print_r(board1)
 
-                    local startPart1, startPart2 =
-                        self.segments[k]:splitInTwoWithSegment(newSegs[1])
+                    local startPart1, startPart2 = self.segments[k]:splitInTwoWithSegment(newSegs[1])
                     -- print("-- Segment k split into 2 segments by newsegs[1]: ")
                     startPart1:debug()
                     startPart2:debug()
 
-                    if self.segments[last]:endEqualsEndOf(self.segments[k]) or
-                        self.segments[last]:startEqualsEndOf(self.segments[k]) then -- next one is linked to the start of this one
+                    if
+                        self.segments[last]:endEqualsEndOf(self.segments[k]) or
+                            self.segments[last]:startEqualsEndOf(self.segments[k])
+                     then -- next one is linked to the start of this one
                         self.segments[k] = startPart1
                         savedstart = startPart2
                     else
@@ -442,7 +498,6 @@ function Level:cutLevel()
                     -- print_r(board1)
                     insertedNewSegments = true
                 end
-
             elseif k ~= startSegi and k ~= endSegi then
                 board1[j] = self.segments[k]:copy()
                 j = j + 1
@@ -461,6 +516,7 @@ function Level:cutLevel()
         -- print('---- Create Second board from '..tostring(board2StartSegi)..' to '..tostring(board2EndSegi))
         j = 1
         if board2StartSegi < board2EndSegi then
+            -- print_r(board2)
             board2[j] = savedStart
             j = j + 1
             -- print_r(board2)
@@ -485,9 +541,9 @@ function Level:cutLevel()
                 board2[j] = newseg:copy()
                 j = j + 1
             end
-            -- print_r(board2)
-
         else
+            -- print('-- inserted new segments, final board2 before ordering')
+            -- print_r(board2)
             -- print('-- inserted first segment, proceed with skipped segments in first board, end < start')
             board2[j] = savedEnd
             j = j + 1
@@ -515,8 +571,6 @@ function Level:cutLevel()
                 j = j + 1
                 i = i - 1
             end
-            -- print('-- inserted new segments, final board2 before ordering')
-            -- print_r(board2)
         end
 
         -- print("order segments in cutlevel board2")
@@ -525,13 +579,12 @@ function Level:cutLevel()
         -- print("PREPARE BOARD 2 -- FINAL")
         -- print_r(board2)
 
-        if self:containsBalls(board1) == 0 then
-            self.segments = board2
-        elseif self:containsBalls(board2) == 0 then
+        local b1balls = self:containsBalls(board1)
+        local b2balls = self:containsBalls(board2)
+        if b1balls > b2balls then
             self.segments = board1
         else
-            self.segments = self:getPerimeter(board1) >
-                                self:getPerimeter(board2) and board1 or board2
+            self.segments = board2
         end
     end
 
@@ -563,8 +616,7 @@ function Level:orderSegments(segs)
 
                 -- -- print("new[i] end equals start of ")
                 -- s:debug()
-                if new[i].vertical == s.vertical and new[i].horizontal ==
-                    s.horizontal then
+                if new[i].vertical == s.vertical and new[i].horizontal == s.horizontal then
                     -- -- print("join contiguous "..tostring(i).. 'with'..tostring(j))
                     new[i]:joinContiguous(s)
                     table.remove(segs, j)
@@ -584,8 +636,7 @@ function Level:orderSegments(segs)
                 -- -- print("new[i] end equals end of ")
                 -- s:debug()
                 s:switchDirection()
-                if new[i].vertical == s.vertical and new[i].horizontal ==
-                    s.horizontal then
+                if new[i].vertical == s.vertical and new[i].horizontal == s.horizontal then
                     -- -- print("join contiguous "..tostring(i).. 'with'..tostring(j))
                     new[i]:joinContiguous(s)
                     table.remove(segs, j)
@@ -608,14 +659,10 @@ function Level:orderSegments(segs)
             -- -- print("search didnt yield any segment")
             local margin = 2
             while not found and margin < 5 do
-                fi, fs = self:findNearestSegment(new[i].secondPointX,
-                                                 new[i].secondPointY, segs,
-                                                 margin)
+                fi, fs = self:findNearestSegment(new[i].secondPointX, new[i].secondPointY, segs, margin)
 
                 if not fs then
-                    fi, fs = self:findNearestSegment(new[i].firstPointX,
-                                                     new[i].firstPointY, segs,
-                                                     margin)
+                    fi, fs = self:findNearestSegment(new[i].firstPointX, new[i].firstPointY, segs, margin)
 
                     if not fs then
                         margin = margin + 1
@@ -662,60 +709,60 @@ function Level:calculateSegmentFaces(segments, firstFace)
     for k, s in ipairs(segments) do
         s.face = face
         if k + 1 <= #segments then
-            if face == 'up' then
-                if s.direction == 'right' then
-                    if segments[k + 1].direction == 'up' then
-                        face = 'left'
+            if face == "up" then
+                if s.direction == "right" then
+                    if segments[k + 1].direction == "up" then
+                        face = "left"
                     else
-                        face = 'right'
+                        face = "right"
                     end
                 else
-                    if segments[k + 1].direction == 'up' then
-                        face = 'right'
+                    if segments[k + 1].direction == "up" then
+                        face = "right"
                     else
-                        face = 'left'
+                        face = "left"
                     end
                 end
-            elseif face == 'down' then
-                if s.direction == 'right' then
-                    if segments[k + 1].direction == 'up' then
-                        face = 'right'
+            elseif face == "down" then
+                if s.direction == "right" then
+                    if segments[k + 1].direction == "up" then
+                        face = "right"
                     else
-                        face = 'left'
+                        face = "left"
                     end
                 else
-                    if segments[k + 1].direction == 'up' then
-                        face = 'left'
+                    if segments[k + 1].direction == "up" then
+                        face = "left"
                     else
-                        face = 'right'
+                        face = "right"
                     end
                 end
-            elseif face == 'right' then
-                if s.direction == 'up' then
-                    if segments[k + 1].direction == 'right' then
-                        face = 'down'
+            elseif face == "right" then
+                if s.direction == "up" then
+                    if segments[k + 1].direction == "right" then
+                        face = "down"
                     else
-                        face = 'up'
+                        face = "up"
                     end
                 else
-                    if segments[k + 1].direction == 'right' then
-                        face = 'up'
+                    if segments[k + 1].direction == "right" then
+                        face = "up"
                     else
-                        face = 'down'
+                        face = "down"
                     end
                 end
-            elseif face == 'left' then
-                if s.direction == 'up' then
-                    if segments[k + 1].direction == 'right' then
-                        face = 'up'
+            elseif face == "left" then
+                if s.direction == "up" then
+                    if segments[k + 1].direction == "right" then
+                        face = "up"
                     else
-                        face = 'down'
+                        face = "down"
                     end
                 else
-                    if segments[k + 1].direction == 'right' then
-                        face = 'down'
+                    if segments[k + 1].direction == "right" then
+                        face = "down"
                     else
-                        face = 'up'
+                        face = "up"
                     end
                 end
             end
@@ -725,28 +772,38 @@ end
 
 function Level:getPerimeter(segments)
     local p = 0
-    if not segments then segments = self.segments end
-    for k, s in pairs(segments) do p = p + s:length() end
+    if not segments then
+        segments = self.segments
+    end
+    for k, s in pairs(segments) do
+        p = p + s:length()
+    end
     return p
 end
 
 function Level:findNearestSegment(x, y, segments, margin)
-    if not segments then segments = self.segments end
-    if not margin then margin = 2 end
+    if not segments then
+        segments = self.segments
+    end
+    if not margin then
+        margin = 2
+    end
     -- find a touching segment within margins
     for i, segment in pairs(segments) do
         if segment.vertical then -- vertical line
-            if x >= segment.firstPointX - margin and x <= segment.firstPointX +
-                margin and y <=
-                math.max(segment.firstPointY, segment.secondPointY) and y >=
-                math.min(segment.firstPointY, segment.secondPointY) then
+            if
+                x >= segment.firstPointX - margin and x <= segment.firstPointX + margin and
+                    y <= math.max(segment.firstPointY, segment.secondPointY) and
+                    y >= math.min(segment.firstPointY, segment.secondPointY)
+             then
                 return i, segment
             end
         elseif segment.horizontal then -- horizontal line
-            if y >= segment.firstPointY - margin and y <= segment.firstPointY +
-                margin and x <=
-                math.max(segment.firstPointX, segment.secondPointX) and x >=
-                math.min(segment.firstPointX, segment.secondPointX) then
+            if
+                y >= segment.firstPointY - margin and y <= segment.firstPointY + margin and
+                    x <= math.max(segment.firstPointX, segment.secondPointX) and
+                    x >= math.min(segment.firstPointX, segment.secondPointX)
+             then
                 return i, segment
             end
         end
@@ -755,15 +812,62 @@ function Level:findNearestSegment(x, y, segments, margin)
 end
 
 function Level:containsBalls(segments)
-    -- returns numbere of balls inside the bounds passed in or self.segments
-    if not segments then segments = self.segments end
+    -- returns number of balls inside the bounds passed in or self.segments
+    if not segments then
+        segments = self.segments
+    end
     local counter = 0
 
     for k, b in pairs(self.balls) do
-        if self:insideBounds(b.x + 4, b.y + 4, segments) or
-            self:pointOnEdge(b.x + 4, b.y + 4, seegments) then
+        if self:insideBounds(b.x + 4, b.y + 4, segments) or self:pointOnEdge(b.x + 4, b.y + 4, seegments) then
             counter = counter + 1
         end
     end
     return counter
+    -- return #self.balls
+end
+
+function Level:createBalls(n)
+    local balls = {}
+
+    for i = 1, n do
+        table.insert(
+            balls,
+            Ball(
+                math.random(LEVEL_RENDER_OFFSET + 5, VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET - 5), --X
+                math.random(LEVEL_RENDER_OFFSET_TOP + 5, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET - 5), --Y
+                math.random(20, 90),
+                math.random(20, 90) -- speed
+            )
+        )
+    end
+    return balls
+end
+function Level:createBallsFromDef(def)
+    local balls = {}
+
+    for i = 1, def.balls do
+        table.insert(
+            balls,
+            Ball(
+                math.random(LEVEL_RENDER_OFFSET + 5, VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET - 5), --X
+                math.random(LEVEL_RENDER_OFFSET_TOP + 5, VIRTUAL_HEIGHT - LEVEL_RENDER_OFFSET - 5), --Y
+                math.random(def.ballSpeed - 10, def.ballSpeed + 10),
+                math.random(def.ballSpeed - 10, def.ballSpeed + 10) -- speed
+            )
+        )
+    end
+    return balls
+end
+
+function Level:updateBalls(dt)
+    for k, ball in pairs(self.balls) do
+        ball:update(dt, self)
+    end
+end
+
+function Level:renderBalls()
+    for k, ball in pairs(self.balls) do
+        ball:render()
+    end
 end

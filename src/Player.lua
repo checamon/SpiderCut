@@ -98,7 +98,6 @@ function Player:onEdge()
 end
 
 function Player:onWalking()
-    -- if position of player collides with its own trail, stop motion
     if #self.trail > 1 then
         table.remove(self.trail)
         table.remove(self.trailSegments)

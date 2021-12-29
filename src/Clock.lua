@@ -26,8 +26,8 @@ function Clock:render()
         love.graphics.setColor(self.color[1], self.color[2], self.color[3],
                                self.color[4])
     end
-    love.graphics.setFont(gFonts['medium'])
-    love.graphics.printf('Time: ' .. self.currentTime, 0, 5, VIRTUAL_WIDTH,
+    love.graphics.setFont(gFonts['small'])
+    love.graphics.printf('Time: ' .. self.currentTime, 0, LEVEL_RENDER_OFFSET_TOP/2, VIRTUAL_WIDTH - LEVEL_RENDER_OFFSET,
                          'right')
     love.graphics.setFont(gFonts['small'])
     love.graphics.setColor(1, 1, 1, 1)
