@@ -171,14 +171,14 @@ end
 
 function Segment:joinPerpendicular(s)
     -- changes the self, not the parameter
-    if s.vertical then
+    if s.vertical and self.horizontal then
         local sx = s.firstPointX
         if math.abs(self.firstPointX - sx) < math.abs(self.secondPointX - sx) then
             self.firstPointX = sx
         else
             self.secondPointX = sx
         end
-    else
+    elseif s.horizontal and self.vertical then
         local sy = s.firstPointY
         if math.abs(self.firstPointY - sy) < math.abs(self.secondPointY - sy) then
             self.firstPointY = sy

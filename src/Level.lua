@@ -195,12 +195,36 @@ function Level:insideBounds(x, y, segments)
         segments = self.segments
     end
     -- prepare shape
-    print_r(self.polygon)
+    local polygon = self:getPolygonFromSegments(segments)
 
-    return PointWithinShape(self.polygon, x, y)
+    return PointWithinShape(polygon, x, y)
+end
+
+function Level:getPolygonFromSegments(segments)
+    local polygon = {}
+    local polygonPoints = {}
+    local pointlist = {}
+    local j = 1
+    for i, segment in ipairs(segments) do
+        polygon[i] = {}
+        polygon[i + 1] = {}
+        polygon[i].x, polygon[i].y, polygon[i + 1].x, polygon[i + 1].y = segment:segmentToPoints()
+        polygonPoints[j] = polygon[i].x
+        polygonPoints[j + 1] = polygon[i].y
+        polygonPoints[j + 2] = polygon[i + 1].x
+        polygonPoints[j + 3] = polygon[i + 1].y
+
+        j = j + 4
+        i = i + 1
+    end
+    return polygon
 end
 
 function Level:createPolygon()
+    if #self.segments > 5 then
+        print("Level:createPolygon")
+        print_r(self.segments)
+    end
     local polygon = {}
     local polygonPoints = {}
     local pointlist = {}
@@ -319,9 +343,9 @@ function Level:cutLevel()
                 -- print("split the segment")
                 part1, temp, part2 = self.segments[k]:splitInThreeWithSegments(newSegs[1], newSegs[#newSegs])
                 -- print("part1")
-                part1:debug()
+                -- part1:debug()
                 -- print("part2")
-                part2:debug()
+                -- part2:debug()
 
                 -- print("insert first part")
                 new[j] = part1
@@ -588,7 +612,7 @@ function Level:cutLevel()
         end
     end
 
-    self:createPolygon()
+    self.polygon = self:createPolygon()
     self.mesh = poly2mesh(self.points)
 end
 
